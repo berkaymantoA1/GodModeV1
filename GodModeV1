@@ -1,0 +1,116 @@
+--// BerkHub God Mode GUI | Rainbow Yazı + "-" Butonlu | Arcues X Uyumlu
+
+local TweenService = game:GetService("TweenService")
+
+-- GUI Oluştur
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "BerkHubGodModeGUI"
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 220, 0, 120)
+frame.Position = UDim2.new(0.1, 0, 0.1, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BackgroundTransparency = 0.1
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+
+-- "-" Butonu
+local minimizeBtn = Instance.new("TextButton", frame)
+minimizeBtn.Size = UDim2.new(0, 25, 0, 25)
+minimizeBtn.Position = UDim2.new(1, -30, 0, 5)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+minimizeBtn.Text = "-"
+minimizeBtn.TextSize = 20
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextColor3 = Color3.new(1, 1, 1)
+minimizeBtn.BorderSizePixel = 0
+minimizeBtn.TextStrokeTransparency = 0.4
+
+-- Başlık
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0.3, 0)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.Text = "BerkHub - God Mode"
+title.TextSize = 20
+title.TextStrokeTransparency = 0
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+-- Aç/Kapat Butonu
+local toggleBtn = Instance.new("TextButton", frame)
+toggleBtn.Size = UDim2.new(0.8, 0, 0.4, 0)
+toggleBtn.Position = UDim2.new(0.1, 0, 0.5, 0)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 18
+toggleBtn.TextStrokeTransparency = 0.3
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+toggleBtn.Text = "God Mode: ON"
+toggleBtn.BorderSizePixel = 0
+
+-- Rainbow Efekti
+spawn(function()
+	while true do
+		local hue = tick() % 5 / 5
+		local color = Color3.fromHSV(hue, 1, 1)
+		title.TextColor3 = color
+		toggleBtn.TextColor3 = color
+		minimizeBtn.TextColor3 = color
+		wait(0.1)
+	end
+end)
+
+-- God Mode
+local godMode = true
+local player = game.Players.LocalPlayer
+
+local function applyGodMode()
+	local char = player.Character or player.CharacterAdded:Wait()
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid.MaxHealth = math.huge
+		humanoid.Health = math.huge
+	end
+end
+
+player.CharacterAdded:Connect(function()
+	if godMode then
+		wait(1)
+		applyGodMode()
+	end
+end)
+
+applyGodMode()
+
+toggleBtn.MouseButton1Click:Connect(function()
+	godMode = not godMode
+	toggleBtn.Text = godMode and "God Mode: ON" or "God Mode: OFF"
+	toggleBtn.BackgroundColor3 = godMode and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+
+	if godMode then
+		applyGodMode()
+	else
+		local char = player.Character
+		local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.MaxHealth = 100
+			humanoid.Health = 100
+		end
+	end
+end)
+
+-- "-" Butonu İşlevi
+local minimized = false
+local originalSize = frame.Size
+local minimizedSize = UDim2.new(0, 220, 0, 40)
+
+minimizeBtn.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	local goalSize = minimized and minimizedSize or originalSize
+	local tween = TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = goalSize})
+	tween:Play()
+
+	toggleBtn.Visible = not minimized
+end)
