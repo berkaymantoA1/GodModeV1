@@ -82,6 +82,13 @@ local function applyGodMode()
 					humanoid.Health = humanoid.MaxHealth
 				end
 			end)
+
+			-- Hasar aldığında tekrar max health ayarlama
+			humanoid.HealthChanged:Connect(function()
+				if humanoid.Health < humanoid.MaxHealth then
+					humanoid.Health = humanoid.MaxHealth
+				end
+			end)
 		end
 	end
 end
