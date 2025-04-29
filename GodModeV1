@@ -121,23 +121,16 @@ workspace.DescendantAdded:Connect(function(descendant)
 	end
 end)
 
-applyGodMode()
-
-player.CharacterAdded:Connect(function()
-	wait(1)
-	if godMode then
-		applyGodMode()
-	end
-end)
-
-toggleBtn.MouseButton1Click:Connect(function()
+-- Toggle God Mode
+local function toggleGodMode()
 	godMode = not godMode
-	toggleBtn.Text = godMode and "God Mode: ON" or "God Mode: OFF"
-	toggleBtn.BackgroundColor3 = godMode and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
-
 	if godMode then
+		toggleBtn.Text = "God Mode: ON"
+		toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 		applyGodMode()
 	else
+		toggleBtn.Text = "God Mode: OFF"
+		toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 		local char = player.Character
 		if char then
 			local humanoid = char:FindFirstChildOfClass("Humanoid")
@@ -147,7 +140,9 @@ toggleBtn.MouseButton1Click:Connect(function()
 			end
 		end
 	end
-end)
+end
+
+toggleBtn.MouseButton1Click:Connect(toggleGodMode)
 
 -- "-" Butonu Tween
 local minimized = false
