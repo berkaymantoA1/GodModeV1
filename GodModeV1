@@ -3,16 +3,20 @@ local player = game.Players.LocalPlayer
 
 -- GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "BerkHubGodModeGUI"
+gui.Name = "BerkHubGUI"
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 120)
+frame.Size = UDim2.new(0, 220, 0, 100)
 frame.Position = UDim2.new(0.1, 0, 0.1, 0)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BackgroundTransparency = 0.1
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
+
+-- Frame'e yuvarlak köşe
+local frameCorner = Instance.new("UICorner", frame)
+frameCorner.CornerRadius = UDim.new(0, 12)
 
 -- "-" Butonu
 local minimizeBtn = Instance.new("TextButton", frame)
@@ -26,28 +30,37 @@ minimizeBtn.TextColor3 = Color3.new(1, 1, 1)
 minimizeBtn.BorderSizePixel = 0
 minimizeBtn.TextStrokeTransparency = 0.4
 
+-- "-" Butonuna yuvarlak köşe
+local minCorner = Instance.new("UICorner", minimizeBtn)
+minCorner.CornerRadius = UDim.new(0, 8)
+
 -- Başlık
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0.3, 0)
-title.Position = UDim2.new(0, 0, 0, 0)
+title.Position = UDim2.new(0.5, 0, 0, 0)
+title.AnchorPoint = Vector2.new(0.5, 0)
 title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
-title.Text = "BerkHub - God Mode"
+title.Text = "BerkHub"
 title.TextSize = 20
 title.TextStrokeTransparency = 0
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 
--- Buton
+-- Toggle Butonu
 local toggleBtn = Instance.new("TextButton", frame)
 toggleBtn.Size = UDim2.new(0.8, 0, 0.4, 0)
 toggleBtn.Position = UDim2.new(0.1, 0, 0.5, 0)
 toggleBtn.Font = Enum.Font.GothamBold
-toggleBtn.TextSize = 18
+toggleBtn.TextSize = 16
 toggleBtn.TextStrokeTransparency = 0.3
 toggleBtn.TextColor3 = Color3.new(1, 1, 1)
 toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 toggleBtn.Text = "God Mode: ON"
 toggleBtn.BorderSizePixel = 0
+
+-- Toggle Butonuna yuvarlak köşe
+local toggleCorner = Instance.new("UICorner", toggleBtn)
+toggleCorner.CornerRadius = UDim.new(0, 8)
 
 -- Rainbow Efekti
 spawn(function()
@@ -61,18 +74,16 @@ spawn(function()
 	end
 end)
 
--- God Mode Sistemi
+-- God Mode değişkeni
 local godMode = true
 
 local function applyGodMode()
 	local character = player.Character or player.CharacterAdded:Wait()
 	local humanoid = character:WaitForChild("Humanoid", 5)
 	if humanoid then
-		-- Sürekli Can Full Kalması İçin
 		humanoid.MaxHealth = math.huge
 		humanoid.Health = math.huge
 
-		-- Her frame'de tekrar etmek için loop
 		if not humanoid:FindFirstChild("GodLoop") then
 			local tag = Instance.new("BoolValue", humanoid)
 			tag.Name = "GodLoop"
@@ -83,9 +94,8 @@ local function applyGodMode()
 				end
 			end)
 
-			-- Hasar aldığında tekrar max health ayarlama
 			humanoid.HealthChanged:Connect(function()
-				if humanoid.Health < humanoid.MaxHealth then
+				if godMode and humanoid.Health < humanoid.MaxHealth then
 					humanoid.Health = humanoid.MaxHealth
 				end
 			end)
@@ -93,36 +103,8 @@ local function applyGodMode()
 	end
 end
 
--- Tek vuruşla öldüren partlara karşı engel
-local function protectFromDamage(part)
-	part.Touched:Connect(function(hit)
-		local character = hit.Parent
-		local humanoid = character:FindFirstChildOfClass("Humanoid")
-		if humanoid and humanoid.Health > 0 then
-			-- God Mode aktifse ve part'a dokunulursa canı tekrar sonsuz yap
-			if godMode then
-				humanoid.Health = humanoid.MaxHealth
-			end
-		end
-	end)
-end
-
--- Tek vuruşla öldüren partları bul ve koru
-for _, part in pairs(workspace:GetDescendants()) do
-	if part:IsA("Part") and part:FindFirstChild("Damage") then
-		protectFromDamage(part)
-	end
-end
-
--- Yeni bir parça geldiğinde kontrol et
-workspace.DescendantAdded:Connect(function(descendant)
-	if descendant:IsA("Part") and descendant:FindFirstChild("Damage") then
-		protectFromDamage(descendant)
-	end
-end)
-
--- Toggle God Mode
-local function toggleGodMode()
+-- Toggle
+toggleBtn.MouseButton1Click:Connect(function()
 	godMode = not godMode
 	if godMode then
 		toggleBtn.Text = "God Mode: ON"
@@ -140,14 +122,12 @@ local function toggleGodMode()
 			end
 		end
 	end
-end
+end)
 
-toggleBtn.MouseButton1Click:Connect(toggleGodMode)
-
--- "-" Butonu Tween
+-- "-" Animasyon
 local minimized = false
 local originalSize = frame.Size
-local minimizedSize = UDim2.new(0, 220, 0, 40)
+local minimizedSize = UDim2.new(0, 220, 0, 30)
 
 minimizeBtn.MouseButton1Click:Connect(function()
 	minimized = not minimized
@@ -156,3 +136,6 @@ minimizeBtn.MouseButton1Click:Connect(function()
 	tween:Play()
 	toggleBtn.Visible = not minimized
 end)
+
+-- Başlangıçta uygula
+applyGodMode()
