@@ -1,5 +1,6 @@
 local TweenService = game:GetService("TweenService")
 local player = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
 
 -- GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
@@ -14,7 +15,6 @@ frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 
--- Frame'e yuvarlak köşe
 local frameCorner = Instance.new("UICorner", frame)
 frameCorner.CornerRadius = UDim.new(0, 12)
 
@@ -28,9 +28,7 @@ minimizeBtn.TextSize = 20
 minimizeBtn.Font = Enum.Font.GothamBold
 minimizeBtn.TextColor3 = Color3.new(1, 1, 1)
 minimizeBtn.BorderSizePixel = 0
-minimizeBtn.TextStrokeTransparency = 0.4
 
--- "-" Butonuna yuvarlak köşe
 local minCorner = Instance.new("UICorner", minimizeBtn)
 minCorner.CornerRadius = UDim.new(0, 8)
 
@@ -58,7 +56,6 @@ toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 toggleBtn.Text = "God Mode: ON"
 toggleBtn.BorderSizePixel = 0
 
--- Toggle Butonuna yuvarlak köşe
 local toggleCorner = Instance.new("UICorner", toggleBtn)
 toggleCorner.CornerRadius = UDim.new(0, 8)
 
@@ -74,36 +71,52 @@ spawn(function()
 	end
 end)
 
--- God Mode değişkeni
+-- God Mode Değişken
 local godMode = true
 
-local function applyGodMode()
-	local character = player.Character or player.CharacterAdded:Wait()
-	local humanoid = character:WaitForChild("Humanoid", 5)
-	if humanoid then
-		humanoid.MaxHealth = math.huge
-		humanoid.Health = math.huge
+-- Humanoid koruma
+local function secureHumanoid(hum)
+	hum.BreakJointsOnDeath = false
+	hum.RequiresNeck = false
+	hum.MaxHealth = math.huge
+	hum.Health = math.huge
+end
 
-		if not humanoid:FindFirstChild("GodLoop") then
-			local tag = Instance.new("BoolValue", humanoid)
-			tag.Name = "GodLoop"
-
-			game:GetService("RunService").Heartbeat:Connect(function()
-				if godMode and humanoid and humanoid.Health < humanoid.MaxHealth then
-					humanoid.Health = humanoid.MaxHealth
-				end
-			end)
-
-			humanoid.HealthChanged:Connect(function()
-				if godMode and humanoid.Health < humanoid.MaxHealth then
-					humanoid.Health = humanoid.MaxHealth
-				end
-			end)
+-- Kill part koruması
+local function preventKillParts()
+	for _, obj in pairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") and obj.Name:lower():find("kill") then
+			obj.CanTouch = false
 		end
 	end
 end
 
--- Toggle
+-- God Mode uygula
+local function applyGodMode()
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if hum then secureHumanoid(hum) end
+	preventKillParts()
+end
+
+-- Sürekli koruma
+RunService.Heartbeat:Connect(function()
+	if godMode then
+		local char = player.Character
+		if char then
+			local hum = char:FindFirstChildOfClass("Humanoid")
+			if not hum then
+				local newHum = Instance.new("Humanoid")
+				newHum.Name = "Humanoid"
+				newHum.Parent = char
+			else
+				secureHumanoid(hum)
+			end
+		end
+	end
+end)
+
+-- Toggle Buton
 toggleBtn.MouseButton1Click:Connect(function()
 	godMode = not godMode
 	if godMode then
@@ -113,18 +126,10 @@ toggleBtn.MouseButton1Click:Connect(function()
 	else
 		toggleBtn.Text = "God Mode: OFF"
 		toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-		local char = player.Character
-		if char then
-			local humanoid = char:FindFirstChildOfClass("Humanoid")
-			if humanoid then
-				humanoid.MaxHealth = 100
-				humanoid.Health = 100
-			end
-		end
 	end
 end)
 
--- "-" Animasyon
+-- "-" Animasyonu
 local minimized = false
 local originalSize = frame.Size
 local minimizedSize = UDim2.new(0, 220, 0, 30)
